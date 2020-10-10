@@ -3,8 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"net/url"
-
 	"github.com/TTvcloud/vcloud-sdk-golang/service/vod"
 )
 
@@ -32,9 +30,11 @@ func main() {
 	fmt.Println(string(b))
 
 	// GetOriginVideoPlayInfo
-	query2 := url.Values{}
-	query2.Set("Vid", vid)
-
+	query2 := vod.GetOriginVideoPlayInfoReq{
+		Vid:    vid,
+		Base64: 0,
+		Ssl:    0,
+	}
 	resp2, code2, _ := instance.GetOriginVideoPlayInfo(query2)
 	fmt.Printf("resp:%+v code:%s\n", resp2, code2)
 	fmt.Println(code)
@@ -42,9 +42,9 @@ func main() {
 	fmt.Println(string(b2))
 
 	// GetRedirectPlayUrl
-	params := vod.RedirectPlayParam{
+	params := vod.RedirectPlayReq{
 		Vid:        vid,
-		Definition: vod.D1080P,
+		Definition: string(vod.D1080P),
 		Watermark:  "",
 		// set expires time of the redirect play url, defalut is 15min(900),
 		// set if if you know the params' meaning exactly.
