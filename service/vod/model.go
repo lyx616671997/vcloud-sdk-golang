@@ -10,7 +10,7 @@ type GetPlayInfoReq struct {
 	CodecType  string `json:"Codec,omitempty"`
 	Definition string `json:"Definition,omitempty"`
 	StreamType string `json:"StreamType,omitempty"`
-	Watermark  string `json:"Watermark,omitempty"`
+	Watermark  string `json:"LogoType,omitempty"`
 	Base64     int64  `json:"Base64,omitempty"`
 	Ssl        int64  `json:"Ssl,omitempty"`
 }
@@ -49,7 +49,7 @@ type PlayInfo struct {
 	MainURL         string `json:"MainPlayUrl"`     //主播放地址
 	BackupURL       string `json:"BackupPlayUrl"`   //备用播放地址
 	FileID          string `json:"FileID"`          //视频file id，用于在p2p点播作为文件唯一标记
-	P2pVerifyURL    string `json:"P2pVerifyURL"`    //p2p点播时，校验文件地址
+	P2pVerifyURL    string `json:"P2pVerifyUrl"`    //p2p点播时，校验文件地址
 	PreloadInterval int64  `json:"PreloadInterval"` //间隔,提前加载时长
 	PreloadMaxStep  int64  `json:"PreloadMaxStep"`  //最大步长， 点播sdk未使用
 	PreloadMinStep  int64  `json:"PreloadMinStep"`  //最小步长， 点播sdk未使用
@@ -90,28 +90,26 @@ type GetOriginVideoPlayInfoData struct {
 
 type RedirectPlayReq struct {
 	Vid        string `json:"Vid"`
-	Definition string  `json:"Definition"` //视频分辨率
-	Watermark  string `json:"Watermark,omitempty"`
+	Definition string `json:"Definition"` //视频分辨率
+	Watermark  string `json:"LogoType,omitempty"`
 	Expires    string
 }
 
-
-type StartTranscodeRequest struct {
+type StartWorkflowRequest struct {
 	Vid          string
-	TemplateId   string `json:"-"`
+	TemplateId   string
 	Input        map[string]interface{}
 	Priority     int
 	CallbackArgs string
-	CallbackUri  string
 }
 
-type StartTranscodeResult struct {
+type StartWorkflowResult struct {
 	RunId string
 }
 
-type StartTranscodeResp struct {
+type StartWorkflowResp struct {
 	ResponseMetadata *base.ResponseMetadata
-	Result           *StartTranscodeResult `json:",omitempty"`
+	Result           *StartWorkflowResult `json:",omitempty"`
 }
 
 type UploadMediaByUrlResult struct {
