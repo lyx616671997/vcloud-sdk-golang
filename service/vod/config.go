@@ -82,6 +82,14 @@ var (
 			},
 			Credentials: base.Credentials{Region: base.RegionUsEast1, Service: "vod"},
 		},
+		base.RegionI18n: {
+			Timeout: 5 * time.Second,
+			Host:    "vod.us-east-2.bytedanceapi.com",
+			Header: http.Header{
+				"Accept": []string{"application/json"},
+			},
+			Credentials: base.Credentials{Region: base.RegionI18n, Service: "vod"},
+		},
 	}
 
 	ServiceInfo = &base.ServiceInfo{

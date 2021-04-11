@@ -10,10 +10,12 @@ const (
 	RegionCnNorth1    = "cn-north-1"
 	RegionUsEast1     = "us-east-1"
 	RegionApSingapore = "ap-singapore-1"
+	RegionI18n        = "us-east-2"
 
 	InnerRegionCnNorth1    = "cn-north-1-inner"
 	InnerRegionUsEast1     = "us-east-1-inner"
 	InnerRegionApSingapore = "ap-singapore-1-inner"
+	InnerRegionI18n        = "us-east-2-inner"
 
 	timeFormatV4 = "20060102T150405Z"
 )
