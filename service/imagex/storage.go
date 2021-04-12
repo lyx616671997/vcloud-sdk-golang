@@ -58,7 +58,7 @@ func (c *ImageXClient) ApplyUploadImage(params *ApplyUploadImageParam) (*ApplyUp
 
 	respBody, _, err := c.Query("ApplyImageUpload", query)
 	if err != nil {
-		return nil, fmt.Errorf("fail to request api ApplyImageUpload, %v", err)
+		return nil, fmt.Errorf("fail to request api ApplyImageUpload, %s, %v", string(respBody), err)
 	}
 
 	result := new(struct {
@@ -79,6 +79,7 @@ func (c *ImageXClient) CommitUploadImage(params *CommitUploadImageParam) (*Commi
 	if params.SpaceName != "" {
 		query.Add("SpaceName", params.SpaceName)
 	}
+	query.Add("SkipMeta", fmt.Sprintf("%v", params.SkipMeta))
 
 	bts, err := json.Marshal(params)
 	if err != nil {
@@ -87,7 +88,7 @@ func (c *ImageXClient) CommitUploadImage(params *CommitUploadImageParam) (*Commi
 
 	respBody, _, err := c.Json("CommitImageUpload", query, string(bts))
 	if err != nil {
-		return nil, fmt.Errorf("fail to request api CommitImageUpload, %v", err)
+		return nil, fmt.Errorf("fail to request api CommitImageUpload, %s, %v", string(respBody), err)
 	}
 
 	result := new(CommitUploadImageResult)
@@ -122,7 +123,7 @@ func (c *ImageXClient) upload(host string, storeInfo StoreInfo, imageBytes []byt
 	}
 
 	if rsp.StatusCode != http.StatusOK {
-		return fmt.Errorf("http status=%v, body=%s, remote_addr=%v", rsp.StatusCode, string(body), req.Host)
+		return fmt.Errorf("http status=%v, body=%s, url=%s", rsp.StatusCode, string(body), url)
 	}
 	defer rsp.Body.Close()
 
@@ -134,19 +135,14 @@ func (c *ImageXClient) upload(host string, storeInfo StoreInfo, imageBytes []byt
 		return fmt.Errorf("fail to unmarshal response, %v", err)
 	}
 	if putResp.Success != 0 {
-		return fmt.Errorf("put to host %s err:%+v", host, putResp)
+		return fmt.Errorf("put to url %s err:%+v", url, putResp)
 	}
 	return nil
 }
 
 // 上传图片
 func (c *ImageXClient) UploadImages(params *ApplyUploadImageParam, images [][]byte, functions ...Function) (*CommitUploadImageResult, error) {
-	if params.UploadNum == 0 {
-		params.UploadNum = 1
-	}
-	if len(images) != params.UploadNum {
-		return nil, fmt.Errorf("images num %d != upload num %d", len(images), params.UploadNum)
-	}
+	params.UploadNum = len(images)
 
 	// 1. apply
 	applyResp, err := c.ApplyUploadImage(params)
@@ -159,19 +155,29 @@ func (c *ImageXClient) UploadImages(params *ApplyUploadImageParam, images [][]by
 	}
 
 	// 2. upload
+	success := make([]string, 0)
+	host := applyResp.UploadHosts[0]
 	for i, image := range images {
-		err := c.upload(applyResp.UploadHosts[0], applyResp.StoreInfos[i], image)
-		if err != nil {
-			return nil, err
+		info := applyResp.StoreInfos[i]
+		for n := 0; n < 3; n++ {
+			err := c.upload(host, info, image)
+			if err != nil {
+				fmt.Printf("Fail to do upload for host %s, uri %s, %v\n", host, info.StoreUri, err)
+			} else {
+				success = append(success, info.StoreUri)
+				break
+			}
 		}
 	}
 
 	// 3. commit
 	commitParams := &CommitUploadImageParam{
-		ServiceId:  params.ServiceId,
-		SpaceName:  params.SpaceName,
-		SessionKey: applyResp.SessionKey,
-		Functions:  functions,
+		ServiceId:   params.ServiceId,
+		SpaceName:   params.SpaceName,
+		SkipMeta:    params.SkipMeta,
+		SessionKey:  applyResp.SessionKey,
+		SuccessOids: success,
+		Functions:   functions,
 	}
 	commitResp, err := c.CommitUploadImage(commitParams)
 	if err != nil {

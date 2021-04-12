@@ -21,7 +21,7 @@ const (
 	ImageXInnerHostVa = "imagex.us-east-1.byted.org"
 	ImageXInnerHostSg = "imagex.ap-singapore-1.byted.org"
 
-	ImageXTimeout              = 5 * time.Second
+	ImageXTimeout              = 10 * time.Second
 	ImageXServiceName          = "ImageX"
 	ImageXApiVersion           = "2018-08-01"
 	ImageXDomainWeightsVersion = "2019-07-01"
@@ -182,6 +182,14 @@ var (
 			Query: url.Values{
 				"Action":  []string{"GetCdnDomainWeights"},
 				"Version": []string{ImageXDomainWeightsVersion},
+			},
+		},
+		"GetImageThemeColor": {
+			Method: http.MethodGet,
+			Path:   "/",
+			Query: url.Values{
+				"Action":  []string{"GetImageThemeColor"},
+				"Version": []string{ImageXApiVersion},
 			},
 		},
 	}

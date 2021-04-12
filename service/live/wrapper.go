@@ -54,6 +54,29 @@ func (l *Live) CreateStream(request *CreateStreamRequest) (*CreateStreamResponse
 	}
 }
 
+func (l *Live) MGetStreamsInfo(request *MGetStreamsInfoRequest) (*MGetStreamsInfoResp, error) {
+	bts, err := json.Marshal(request)
+	if err != nil {
+		return nil, err
+	}
+
+	respBody, status, err := l.Json("MGetStreamsInfo", nil, string(bts))
+	if err != nil {
+		return nil, err
+	}
+	if status != http.StatusOK {
+		return nil, errors.Wrap(fmt.Errorf("http error"), string(status))
+	}
+
+	resp := &MGetStreamsInfoResp{}
+	if err := json.Unmarshal(respBody, resp); err != nil {
+		return nil, errors.Wrap(err, "[vcloud-live] resp unmarshal failed")
+	} else {
+		resp.ResponseMetadata.Service = "live"
+		return resp, nil
+	}
+}
+
 func (l *Live) MGetStreamsPushInfo(request *MGetStreamsPushInfoRequest) (*MGetStreamsPushInfoResp, error) {
 	bts, err := json.Marshal(request)
 	if err != nil {
@@ -144,6 +167,30 @@ func (l *Live) GetVODs(request *GetVODsRequest) (*GetVODsResponse, error) {
 	}
 }
 
+func (l *Live) CreateVOD(request *CreateVODRequest) (*CreateVODResponse, error) {
+	bts, err := json.Marshal(request)
+	if err != nil {
+		return nil, err
+	}
+
+	respBody, status, err := l.Json("CreateVOD", nil, string(bts))
+	if err != nil {
+		return nil, err
+	}
+
+	if status != http.StatusOK {
+		return nil, errors.Wrap(fmt.Errorf("http error"), string(status))
+	}
+
+	resp := &CreateVODResponse{}
+	if err := json.Unmarshal(respBody, resp); err != nil {
+		return nil, err
+	} else {
+		resp.ResponseMetadata.Service = "live"
+		return resp, nil
+	}
+}
+
 func (l *Live) GetRecords(request *GetRecordsRequest) (*GetRecordsResponse, error) {
 	query := url.Values{}
 	query.Add("Stream", request.Stream)
@@ -192,7 +239,7 @@ func (l *Live) GetOnlineUserNum(request *GetOnlineUserNumRequest) (*GetOnlineUse
 	query.Add("StartTime", strconv.FormatInt(request.StartTime, 10))
 	query.Add("EndTime", strconv.FormatInt(request.EndTime, 10))
 
-	respBody, status, err := l.Query("GetStreamTimeShiftInfo", query)
+	respBody, status, err := l.Query("GetOnlineUserNum", query)
 	if err != nil {
 		return nil, err
 	}
